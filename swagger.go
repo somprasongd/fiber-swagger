@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	swaggerFiles "github.com/swaggo/files/v2"
 	"github.com/swaggo/swag/v2"
 	"github.com/valyala/fasthttp/fasthttpadaptor"
@@ -92,7 +92,7 @@ func FiberWrapHandler(configFns ...func(c *Config)) fiber.Handler {
 
 	var re = regexp.MustCompile(`^(.*/)([^?].*)?[?|.]*$`)
 
-	return func(ctx *fiber.Ctx) error {
+	return func(ctx fiber.Ctx) error {
 		matches := re.FindStringSubmatch(string(ctx.Request().URI().Path()))
 		path := matches[2]
 		prefix := matches[1]
@@ -100,7 +100,7 @@ func FiberWrapHandler(configFns ...func(c *Config)) fiber.Handler {
 		fileExt := filepath.Ext(path)
 		switch path {
 		case "":
-			return ctx.Redirect(filepath.Join(prefix, "index.html"), fiber.StatusMovedPermanently)
+			return ctx.Redirect().Status(fiber.StatusMovedPermanently).To(filepath.Join(prefix, "index.html"))
 
 		case "index.html":
 			ctx.Type(fileExt[0:], "utf-8")
@@ -117,7 +117,7 @@ func FiberWrapHandler(configFns ...func(c *Config)) fiber.Handler {
 			ctx.Type(fileExt[0:], "utf-8")
 			return ctx.SendString(doc)
 		default:
-			fasthttpadaptor.NewFastHTTPHandler(http.StripPrefix(prefix, http.FileServer(http.FS(fs))))(ctx.Context())
+			fasthttpadaptor.NewFastHTTPHandler(http.StripPrefix(prefix, http.FileServer(http.FS(fs))))(ctx.RequestCtx())
 
 			switch fileExt {
 			case ".css":
