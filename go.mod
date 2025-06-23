@@ -1,4 +1,4 @@
-module github.com/swaggo/fiber-swagger
+module github.com/somprasongd/fiber-swagger
 
 go 1.24
 
